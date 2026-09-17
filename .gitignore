@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+coverage
+
+# Next.js auto-generates these for AI agents
+AGENTS.md
+CLAUDE.md

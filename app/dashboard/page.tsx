@@ -4,7 +4,8 @@ import { ArrowUpRight } from "lucide-react";
 import { Badge, EmptyState, PageHeader, Stat } from "@/components/ui/primitives";
 import { hasApiKey } from "@/lib/jev/client";
 import { getDashboardData } from "@/lib/metrics/dashboard";
-import { fmtDateTime, fmtLatency } from "@/lib/ui";
+import { fmtLatency } from "@/lib/ui";
+import { LocalTime } from "@/components/local-time";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +91,7 @@ export default function DashboardPage() {
                         {run.stepCount} steps
                       </span>
                       <span className="num shrink-0 text-[11px] text-text-muted">
-                        {fmtDateTime(run.startedAt)}
+                        <LocalTime value={run.startedAt} />
                       </span>
                     </Link>
                   </li>

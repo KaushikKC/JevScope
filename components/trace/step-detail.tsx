@@ -10,7 +10,7 @@
 
 import { EVENT_TYPE_LABELS } from "@/lib/jev/presentation";
 import type { TraceStep } from "@/lib/trace/types";
-import { fmtTime } from "@/lib/ui";
+import { LocalTime } from "@/components/local-time";
 
 import { Badge, RawText } from "@/components/ui/primitives";
 import { JsonBlock } from "@/components/ui/disclosure";
@@ -24,7 +24,7 @@ export function StepDetail({ step }: { step: TraceStep }) {
           <Badge>{EVENT_TYPE_LABELS[step.eventType] ?? step.eventType}</Badge>
           {step.toolName && <Badge tone="accent">{step.toolName}</Badge>}
           <span className="num ml-auto text-[11px] text-text-muted">
-            {fmtTime(step.timestamp)}
+            <LocalTime value={step.timestamp} format="time" />
           </span>
         </div>
       </div>

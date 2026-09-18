@@ -21,6 +21,8 @@ import { PHASES } from "@/lib/jev/types";
 import type { SemanticEvaluationView } from "@/lib/trace/serialize";
 import { fmtLatency, fmtProbability } from "@/lib/ui";
 
+import { LocalTime } from "@/components/local-time";
+
 import { Badge, Button } from "@/components/ui/primitives";
 import { Disclosure, JsonBlock } from "@/components/ui/disclosure";
 import { ProbabilityBar } from "./probability-bar";
@@ -150,7 +152,7 @@ export function EvaluationPanel({
         <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
           <Meta label="Model" value={evaluation.model} />
           <Meta label="Latency" value={fmtLatency(evaluation.latencyMs)} />
-          <Meta label="Evaluated" value={new Date(evaluation.createdAt).toLocaleString()} />
+          <Meta label="Evaluated" value={<LocalTime value={evaluation.createdAt} />} />
           <Meta label="Request ID" value={evaluation.requestId ?? "—"} />
         </dl>
       </section>
@@ -187,11 +189,14 @@ export function EvaluationPanel({
   );
 }
 
-function Meta({ label, value }: { label: string; value: string }) {
+function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="min-w-0">
       <dt className="label-caps">{label}</dt>
-      <dd className="num truncate text-[11.5px] text-text-secondary" title={value}>
+      <dd
+        className="num truncate text-[11.5px] text-text-secondary"
+        title={typeof value === "string" ? value : undefined}
+      >
         {value}
       </dd>
     </div>

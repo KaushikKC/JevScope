@@ -25,24 +25,35 @@ export function fmtLatency(ms: number | null | undefined): string {
   return `${(ms / 1000).toFixed(2)} s`;
 }
 
-export function fmtTime(value: Date | string | number): string {
+/**
+ * Timestamp formatting.
+ *
+ * `timeZone` is a parameter rather than an implicit default because the server
+ * and the browser sit in different zones: rendering "whatever this machine
+ * thinks local is" on both sides guarantees a hydration mismatch. Server
+ * rendering passes "UTC" so both agree; `<LocalTime>` re-renders in the
+ * viewer's own zone once mounted.
+ */
+export function fmtTime(value: Date | string | number, timeZone?: string): string {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString(undefined, {
+  return date.toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
+    timeZone,
   });
 }
 
-export function fmtDateTime(value: Date | string | number): string {
+export function fmtDateTime(value: Date | string | number, timeZone?: string): string {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString("en-GB", {
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone,
   });
 }
 

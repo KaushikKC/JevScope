@@ -18,7 +18,8 @@ import { DIMENSION_PRESENTATION, PHASE_PRESENTATION } from "@/lib/jev/presentati
 import { NOUL_DIMENSIONS, type NoulDimension } from "@/lib/jev/types";
 import { choiceAccuracy } from "@/lib/metrics/classification";
 import type { DatasetSummary, ScenarioPrediction } from "@/lib/evaluations/datasets";
-import { cn, fmtDateTime, fmtLatency, fmtProbability } from "@/lib/ui";
+import { cn, fmtLatency, fmtProbability } from "@/lib/ui";
+import { LocalTime } from "@/components/local-time";
 
 interface DatasetDetail {
   dataset: DatasetSummary;
@@ -173,7 +174,7 @@ export function EvaluationsView({ datasets }: { datasets: DatasetSummary[] }) {
                     </div>
                     {dataset.latestRunAt && (
                       <div className="mt-0.5 text-[10.5px] text-text-muted">
-                        evaluated {fmtDateTime(dataset.latestRunAt)}
+                        evaluated <LocalTime value={dataset.latestRunAt} />
                       </div>
                     )}
                   </button>

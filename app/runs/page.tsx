@@ -4,7 +4,8 @@ import { DemoLauncher } from "@/components/trace/demo-launcher";
 import { Badge, EmptyState, PageHeader } from "@/components/ui/primitives";
 import { DEMO_RUNS } from "@/lib/fixtures/demo-runs";
 import { getEvaluationsForRun, getSteps, listRuns } from "@/lib/trace/ingest";
-import { fmtDateTime, fmtLatency } from "@/lib/ui";
+import { fmtLatency } from "@/lib/ui";
+import { LocalTime } from "@/components/local-time";
 
 export const dynamic = "force-dynamic";
 
@@ -89,7 +90,7 @@ export default function RunsPage() {
                         {fmtLatency(run.averageLatencyMs)}
                       </td>
                       <td className="num px-3.5 py-2 text-right text-[11.5px] text-text-muted">
-                        {fmtDateTime(run.startedAt)}
+                        <LocalTime value={run.startedAt} />
                       </td>
                     </tr>
                   ))}

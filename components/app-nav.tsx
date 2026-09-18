@@ -12,6 +12,10 @@ import {
 
 import { cn } from "@/lib/ui";
 
+import type { Theme } from "@/lib/theme";
+
+import { ThemeToggle } from "./theme-toggle";
+
 const LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/runs", label: "Runs", icon: ListTree },
@@ -20,16 +24,28 @@ const LINKS = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function AppNav({ configured }: { configured: boolean }) {
+export function AppNav({
+  configured,
+  theme,
+}: {
+  configured: boolean;
+  /** Undefined when no choice is stored: the OS preference is in effect. */
+  theme?: Theme;
+}) {
   const pathname = usePathname();
 
   return (
     <nav className="sticky top-0 flex h-screen w-[208px] shrink-0 flex-col border-r border-border bg-surface-1">
       <div className="px-4 py-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Sigil />
-          <span className="text-[15px] font-semibold tracking-tight">JevScope</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
+            <Sigil />
+            <span className="text-[15px] font-semibold tracking-tight">JevScope</span>
+          </Link>
+          <span className="ml-auto">
+            <ThemeToggle current={theme} />
+          </span>
+        </div>
         <p className="mt-1 text-[11px] leading-snug text-text-muted">
           Semantic observability
         </p>

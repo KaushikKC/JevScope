@@ -14,7 +14,12 @@ import { dirname, resolve } from "node:path";
 
 import * as schema from "./schema";
 
-const DB_PATH = resolve(process.cwd(), process.env.DATABASE_URL ?? "./data/jevscope.db");
+// turbopackIgnore keeps the bundler from tracing the whole project just because
+// this path is configurable; the file is opened at runtime, never bundled.
+const DB_PATH = resolve(
+  /* turbopackIgnore: true */ process.cwd(),
+  process.env.DATABASE_URL ?? "./data/jevscope.db",
+);
 
 function createConnection() {
   mkdirSync(dirname(DB_PATH), { recursive: true });

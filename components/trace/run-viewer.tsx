@@ -18,10 +18,11 @@ import { SignalStrips } from "@/components/charts/signal-strip";
 import { SECONDARY_DIMENSIONS } from "@/lib/jev/presentation";
 import type { SemanticEvaluationView } from "@/lib/trace/serialize";
 import type { TraceEventInput, TraceRun, TraceStep } from "@/lib/trace/types";
-import { fmtDuration, fmtLatency } from "@/lib/ui";
+import { fmtLatency } from "@/lib/ui";
 
 import { Badge, Button, Stat } from "@/components/ui/primitives";
 import { EventCard } from "./event-card";
+import { LiveDuration } from "./live-duration";
 import { EvaluationPanel } from "./evaluation-panel";
 import { StepDetail } from "./step-detail";
 
@@ -169,7 +170,12 @@ export function RunViewer({ initial }: { initial: RunViewerData }) {
           <Stat label="Avg Jev latency" value={fmtLatency(averageLatency)} />
           <Stat
             label="Duration"
-            value={fmtDuration(data.run.startedAt, data.run.finishedAt)}
+            value={
+              <LiveDuration
+                startedAt={data.run.startedAt}
+                finishedAt={data.run.finishedAt}
+              />
+            }
           />
           <Stat
             label="Model"

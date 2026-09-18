@@ -74,21 +74,28 @@ export const NOUL_QUESTIONS: Record<NoulDimension, NoulQuestion> = {
     },
   ),
 
+  // Asks whether an unverified change is outstanding RIGHT NOW, not whether the
+  // task as a whole still needs checking. The earlier phrasing asked the
+  // latter, which is trivially true at every mid-task step and so returned
+  // 0.9+ everywhere, carrying no information.
   needsVerification: noul(
-    "Based only on the evidence in the supplied state, would additional verification be needed before the agent could reasonably consider `task` complete?",
+    "Looking at `currentStep` and `recentHistory`, is there a change the agent has made whose effect has not yet been observed? That is, is work sitting unverified at this moment?",
     {
-      true: "The state does not yet contain evidence that the work is correct: tests have not been run since the last change, results were not checked, or the outcome of a change is unobserved.",
+      true: "The most recent substantive change has not been followed by any observation of its effect: no test was run, no output was inspected, and no result was read back since it was made.",
       false:
-        "The state already contains evidence that the work is correct, such as a passing test run that covers the change, or the task is not at a point where completion is in question.",
+        "No unverified change is outstanding. Either the most recent change was followed by an observed result, such as a test run or an inspected output, or the agent has not changed anything.",
     },
   ),
 
+  // Asks whether the agent IS claiming completion unsupported, not whether a
+  // hypothetical claim would be premature. The hypothetical is true at almost
+  // every step of an unfinished task, which made the earlier version saturate.
   prematureCompletion: noul(
-    "Based only on the evidence present in the supplied state, would claiming that `task` is complete at this point be premature?",
+    "In `currentStep`, is the agent asserting or signalling that `task` is finished, when the evidence in the supplied state does not establish that it is?",
     {
-      true: "The supplied evidence does not establish that the task is done: work remains, checks have failed, or the claim of completion is not supported by an observed result.",
+      true: "The current step claims, states, or clearly implies that the work is done, and the supplied state does not support that: checks last seen were failing, required work is untouched, or no result confirms the outcome.",
       false:
-        "The supplied evidence supports that the task is complete, or completion is not being approached and so the question of prematurity does not arise.",
+        "The current step makes no claim that the work is finished, or it does claim so and the supplied evidence does support it.",
     },
   ),
 

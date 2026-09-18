@@ -9,7 +9,7 @@
  * timeline, and the raw response are always looking at the same moment.
  */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Play, RotateCw } from "lucide-react";
 
@@ -42,6 +42,52 @@ export function RunViewer({ initial }: { initial: RunViewerData }) {
   const [simulating, setSimulating] = useState(false);
   const [simulationError, setSimulationError] = useState<string | null>(null);
   const cancelled = useRef(false);
+
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  const live = data.run.status === "running" && !simulating;
+
+  /**
+   * Follows a run that an external agent is still reporting into. The demo
+   * simulation appends its own results, so polling pauses while it runs.
+   * Selection follows the newest step only if the newest step was already
+   * selected, so reading an earlier step is never interrupted.
+   */
+  useEffect(() => {
+    if (!live) return;
+    const runId = data.run.id;
+
+    const timer = setInterval(async () => {
+      if (document.hidden) return;
+      try {
+        const response = await fetch(`/api/runs/${runId}`, { cache: "no-store" });
+        if (!response.ok) return;
+        const next = (await response.json()) as Pick<RunViewerData, "run" | "steps">;
+
+        const current = dataRef.current;
+        if (
+          next.steps.length === current.steps.length &&
+          next.run.status === current.run.status
+        ) {
+          return;
+        }
+        const previousLast = current.steps.at(-1)?.step.id ?? null;
+        setData({ ...current, run: next.run, steps: next.steps });
+        setSelectedStepId((selectedId) =>
+          selectedId === null || selectedId === previousLast
+            ? (next.steps.at(-1)?.step.id ?? null)
+            : selectedId,
+        );
+      } catch {
+        // A missed poll is harmless; the next one catches up.
+      }
+    }, 2000);
+
+    return () => clearInterval(timer);
+  }, [live, data.run.id]);
 
   const selected = data.steps.find((entry) => entry.step.id === selectedStepId) ?? data.steps[0];
 
@@ -127,6 +173,12 @@ export function RunViewer({ initial }: { initial: RunViewerData }) {
                 {data.run.name}
               </h1>
               <StatusBadge status={data.run.status} />
+              {live && !data.run.demoKey && (
+                <span className="flex items-center gap-1.5 text-[11px] text-text-secondary">
+                  <span className="size-1.5 animate-pulse rounded-full bg-[var(--color-status-good)]" />
+                  live
+                </span>
+              )}
             </div>
             <p className="mt-0.5 max-w-3xl text-[12.5px] text-text-secondary">{data.run.task}</p>
           </div>

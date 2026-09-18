@@ -85,6 +85,8 @@ lib/
   metrics/       drift, distributions, classification metrics
   evaluations/   labelled datasets and scoring
   fixtures/      demo runs and the starter benchmark
+clients/         drop-in reporting clients: jevscope.ts, jevscope.py
+examples/        a runnable agent that reports through the client
 tests/
   unit tests (TypeSafe mocked) + tests/integration (opt-in, real requests)
 ```
@@ -185,6 +187,10 @@ the detail and evaluation panes together.
 The goal is that you can answer *"when did this agent start going wrong?"*
 without reading any JSON.
 
+While a run's status is `running`, the viewer checks for new steps every two
+seconds, so you can open it and watch an external agent report in. The newest
+step stays selected unless you have clicked back to an earlier one.
+
 Below the chart: a chronological event timeline (left), the selected event's
 content and tool payloads (centre), and its full semantic evaluation (right)
 with expandable access to the exact state sent, the exact questions, the raw
@@ -232,6 +238,78 @@ prediction until a threshold turns it into one, and where that threshold belongs
 depends on what a false positive costs *you*. So the threshold is an interactive
 control, it starts at 0.5 rather than at a borrowed 0.8, and every metric is
 stamped with the threshold that produced it.
+
+---
+
+## Connect your agent
+
+JevScope does not watch your process or intercept anything. Your agent reports
+each step, and JevScope judges it. The clients in `clients/` do the reporting in
+a few lines; each is a single file with no dependencies, so copy it into your
+project.
+
+**TypeScript / JavaScript** (`clients/jevscope.ts`, anywhere `fetch` exists):
+
+```ts
+import { JevScope } from "./jevscope";
+
+const scope = new JevScope({ baseUrl: "http://localhost:3000" });
+const run = await scope.startRun({ name: "My agent", task: userRequest });
+console.log("watch it live:", run.url);
+
+// inside your agent loop: wrap each tool call
+const output = await run.tool(call.name, call.args, () => executeTool(call), modelText);
+
+await run.finish(); // or run.finish("failed")
+```
+
+**Python** (`clients/jevscope.py`, standard library only):
+
+```python
+from jevscope import JevScope
+
+scope = JevScope("http://localhost:3000")
+run = scope.start_run(name="My agent", task=user_request)
+
+output = run.tool(call.name, call.args, lambda: execute_tool(call), content=model_text)
+
+run.finish()
+```
+
+What the clients handle for you:
+
+- **Never slows the agent down.** `tool` and `report` send in the background.
+  Each judgment takes a few hundred milliseconds, and your agent does not wait for it.
+- **Keeps order.** Steps go out one at a time, in order, because each judgment
+  looks at the steps before it.
+- **Never breaks the agent.** A wrapped tool returns or throws exactly what it
+  would have without the wrapper, and a failed report goes to `onError` /
+  `on_error` instead of raising.
+- **Handles long outputs.** Payloads over the server's 20,000-character limit
+  are shortened in the middle, not rejected. The end of a test log, where the
+  result usually is, is kept.
+
+Use `run.step(...)` instead when you want to wait for the judgment, for example
+to stop a run whose `stuck` probability stays high.
+
+To check your setup end to end, start JevScope and run the example agent. Its
+actions are scripted so the run is reproducible, but the judgments are real:
+
+```bash
+npm run dev
+npx tsx examples/stuck-agent.ts
+```
+
+```
+step 1  progress 0.91  repetition 0.04  stuck 0.08  verifying    [jev, 637 ms]
+step 2  progress 0.83  repetition 0.05  stuck 0.10  recovering   [jev, 251 ms]
+step 3  progress 0.54  repetition 0.12  stuck 0.52  verifying    [jev, 320 ms]
+step 4  progress 0.35  repetition 0.47  stuck 0.80  recovering   [jev, 252 ms]
+step 5  progress 0.17  repetition 0.69  stuck 0.88  verifying    [jev, 225 ms]
+```
+
+That output is from one run against `jev-1.13.0`. Yours will differ slightly,
+since the model is being measured, not replayed.
 
 ---
 

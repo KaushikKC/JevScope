@@ -3,53 +3,138 @@
 /*
  * JevScope visual system.
  *
- * Committed to a single dark look, the way the observability tools this sits
- * next to are (Sentry, Langfuse, Linear). Charts are validated against the
- * `--surface-1` value below; changing it means re-running the palette validator.
+ * Both themes are SELECTED, not flipped: the dark series colors are their own
+ * steps chosen for the dark surface, not an automatic inversion of the light
+ * ones. Each set was validated with the palette validator against the surface
+ * it actually sits on (`--color-surface-1`), so changing a surface means
+ * re-running that check.
+ *
+ * Light is the base. Dark is applied in two scopes — the OS preference, and an
+ * explicit `data-theme` stamp from the toggle, which must win in both
+ * directions. The `:not([data-theme="light"])` guard lets an explicit light
+ * choice beat OS-dark.
  */
 
 @theme {
-  --color-bg: #0a0a0c;
-  --color-surface-1: #101013;
-  --color-surface-2: #16161a;
-  --color-surface-3: #1c1c21;
-  --color-border: #26262c;
-  --color-border-strong: #34343c;
+  /* ---- Light (base) ---- */
+  --color-bg: #f6f6f7;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f2f2f4;
+  --color-surface-3: #e7e7ec;
+  --color-border: #e4e4e9;
+  --color-border-strong: #cfcfd7;
 
-  --color-text-primary: #f2f2f4;
-  --color-text-secondary: #a0a0aa;
-  --color-text-muted: #6e6e78;
+  --color-text-primary: #16161a;
+  --color-text-secondary: #55555f;
+  --color-text-muted: #7c7c88;
 
-  --color-accent: #3987e5;
+  --color-accent: #2a78d6;
 
   /*
-   * Categorical series slots, in fixed order. A dimension keeps its color
-   * whether or not other series are visible — toggling a line off never
+   * Categorical series slots, in fixed order. A dimension keeps its slot
+   * whether or not other series are visible, so toggling a line off never
    * repaints the ones that remain.
    *
-   * Validated as a set against --surface-1 (dark, adjacent pairlist):
-   * lightness band, chroma floor, CVD separation (worst adjacent ΔE 8.4),
-   * normal-vision floor (19.3), and contrast all pass.
+   * Light set validated against #ffffff: lightness band, chroma floor, CVD
+   * separation (worst adjacent ΔE 9.1), and normal-vision floor (19.6) all
+   * pass. Three slots (aqua, yellow, magenta) fall below 3:1 contrast, so the
+   * relief rule applies — every chart here ships a text legend, printed values,
+   * and a table view, which is what satisfies it.
    */
-  --color-series-1: #3987e5; /* task alignment      */
-  --color-series-2: #d95926; /* progress            */
-  --color-series-3: #199e70; /* repetition          */
-  --color-series-4: #c98500; /* stuck               */
-  --color-series-5: #d55181; /* needs verification  */
-  --color-series-6: #008300; /* premature completion*/
-  --color-series-7: #9085e9; /* unexpected direction*/
+  --color-series-1: #2a78d6; /* task alignment       */
+  --color-series-2: #eb6834; /* progress             */
+  --color-series-3: #1baf7a; /* repetition           */
+  --color-series-4: #eda100; /* stuck                */
+  --color-series-5: #e87ba4; /* needs verification   */
+  --color-series-6: #008300; /* premature completion */
+  --color-series-7: #4a3aa7; /* unexpected direction */
 
   /* Reserved status palette. Never used for a series. */
-  --color-status-good: #199e70;
-  --color-status-warning: #c98500;
-  --color-status-critical: #e66767;
+  --color-status-good: #1a7f5a;
+  --color-status-warning: #a06b00;
+  --color-status-critical: #c8393a;
 
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, monospace;
 }
 
+/* ---- Dark, as its own selected set ---- */
+@custom-variant dark (&:where(:root[data-theme="dark"] *, :root[data-theme="dark"]));
+
+@layer theme {
+  /* OS preference, unless an explicit light choice overrides it. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --color-bg: #0a0a0c;
+      --color-surface-1: #101013;
+      --color-surface-2: #16161a;
+      --color-surface-3: #1c1c21;
+      --color-border: #26262c;
+      --color-border-strong: #34343c;
+
+      --color-text-primary: #f2f2f4;
+      --color-text-secondary: #a0a0aa;
+      --color-text-muted: #6e6e78;
+
+      --color-accent: #3987e5;
+
+      /* Validated against #101013; worst adjacent CVD ΔE 8.4, all ≥ 3:1. */
+      --color-series-1: #3987e5;
+      --color-series-2: #d95926;
+      --color-series-3: #199e70;
+      --color-series-4: #c98500;
+      --color-series-5: #d55181;
+      --color-series-6: #008300;
+      --color-series-7: #9085e9;
+
+      --color-status-good: #199e70;
+      --color-status-warning: #c98500;
+      --color-status-critical: #e66767;
+    }
+  }
+
+  /* Explicit toggle. Wins over the OS setting in both directions. */
+  :root[data-theme="dark"] {
+    --color-bg: #0a0a0c;
+    --color-surface-1: #101013;
+    --color-surface-2: #16161a;
+    --color-surface-3: #1c1c21;
+    --color-border: #26262c;
+    --color-border-strong: #34343c;
+
+    --color-text-primary: #f2f2f4;
+    --color-text-secondary: #a0a0aa;
+    --color-text-muted: #6e6e78;
+
+    --color-accent: #3987e5;
+
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
+    --color-series-3: #199e70;
+    --color-series-4: #c98500;
+    --color-series-5: #d55181;
+    --color-series-6: #008300;
+    --color-series-7: #9085e9;
+
+    --color-status-good: #199e70;
+    --color-status-warning: #c98500;
+    --color-status-critical: #e66767;
+  }
+}
+
 @layer base {
   :root {
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
     color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
   }
 
   html,
@@ -66,7 +151,7 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 25%, transparent);
   }
 
   /* Dense scrollbars: these panels scroll a lot. */
@@ -83,7 +168,7 @@
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #45454f;
+    background: var(--color-text-muted);
   }
 }
 
@@ -107,8 +192,35 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .focus-ring {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+  /*
+   * Show an element only under the resolved theme. Used where the server
+   * cannot know which theme applies (no cookie set, OS preference in effect)
+   * and must not guess — guessing would mismatch on hydration.
+   */
+  .when-light {
+    display: contents;
+  }
+  .when-dark {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .when-light {
+      display: none;
+    }
+    :root:not([data-theme="light"]) .when-dark {
+      display: contents;
+    }
+  }
+  :root[data-theme="dark"] .when-light {
+    display: none;
+  }
+  :root[data-theme="dark"] .when-dark {
+    display: contents;
+  }
+  :root[data-theme="light"] .when-light {
+    display: contents;
+  }
+  :root[data-theme="light"] .when-dark {
+    display: none;
   }
 }
